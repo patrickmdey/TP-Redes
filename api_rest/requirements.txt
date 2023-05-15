@@ -1,0 +1,5 @@
+flask==2.3.2
+prometheus_client==0.16.0
+# werkzeug.middleware.dispatcher
+
+
