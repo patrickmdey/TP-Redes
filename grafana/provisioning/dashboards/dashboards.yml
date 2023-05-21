@@ -1,0 +1,10 @@
+# providers:
+#     - name: 'default'
+#       orgId: 1
+#       folder: ''
+#       type: file
+#       disableDeletion: false
+#       editable: true
+#       allowUiUpdates: true
+#       options:
+#           path: ../dashboard_options
