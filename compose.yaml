@@ -52,7 +52,6 @@ services:
             - web-monitor
         command: sh -c "cd /usr/src/app && pip install -r requirements.txt && python3 api.py"
 
-
     prometheus:
         image: prom/prometheus:latest
         container_name: prometheus
@@ -104,7 +103,7 @@ services:
             - 27017:27017
         networks:
             - web-monitor
-    
+
     mongo-exporter:
         # image: percona/mongodb_exporter:latest
         image: bitnami/mongodb-exporter:latest
@@ -119,11 +118,37 @@ services:
         networks:
             - web-monitor
         command:
-            - "--mongodb.uri=mongodb://mongo:27017"
-            - "--mongodb.collstats-colls=players"
-            - "--discovering-mode"
-            - "--mongodb.direct-connect"  
-            - "--collect-all"            
+            - '--mongodb.uri=mongodb://mongo:27017'
+            - '--mongodb.collstats-colls=players'
+            - '--discovering-mode'
+            - '--mongodb.direct-connect'
+            - '--collect-all'
+
+    apache:
+        build:
+            context: ./apache
+            dockerfile: Dockerfile
+        container_name: apache
+        restart: unless-stopped
+        networks:
+            - web-monitor
+        expose:
+            - 80
+        ports:
+            - 80:80
+
+    apache-exporter:
+        image: lusotycoon/apache-exporter:latest
+        container_name: apache-exporter
+        restart: unless-stopped
+        expose:
+            - 9117
+        ports:
+            - 9117:9117
+        networks:
+            - web-monitor
+        command:
+            - '--scrape_uri=http://apache:80/server-status?auto'
 
     # mail-exporter:
     #     build:
