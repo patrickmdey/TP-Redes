@@ -13,6 +13,14 @@ scrape_configs:
       static_configs:
           - targets: ['node-exporter:9100']
 
-    - job_name: 'postgres-exporter'
+    - job_name: 'mongo_exporter'
       static_configs:
-          - targets: ['postgres-exporter:5187']
+          - targets: ['mongo-exporter:9216']
+
+    # - job_name: 'postgres-exporter'
+    #   static_configs:
+    #       - targets: ['postgres-exporter:5187']
+
+    # - job_name: 'mail-exporter'
+    #   static_configs:
+    #       - targets: ['mail-exporter:8025']

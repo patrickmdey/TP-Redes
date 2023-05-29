@@ -52,6 +52,108 @@ services:
             - web-monitor
         command: sh -c "cd /usr/src/app && pip install -r requirements.txt && python3 api.py"
 
+
+    prometheus:
+        image: prom/prometheus:latest
+        container_name: prometheus
+        restart: unless-stopped
+        volumes:
+            - ./prometheus.yml:/etc/prometheus/prometheus.yml
+            - prometheus_data:/prometheus
+        command:
+            - '--config.file=/etc/prometheus/prometheus.yml'
+            - '--storage.tsdb.path=/prometheus'
+            - '--web.console.libraries=/etc/prometheus/console_libraries'
+            - '--web.console.templates=/etc/prometheus/consoles'
+            - '--web.enable-lifecycle'
+        expose:
+            - 9090
+        ports:
+            - 9090:9090
+        networks:
+            - web-monitor
+
+    grafana:
+        image: grafana/grafana-oss:latest
+        container_name: grafana
+        restart: unless-stopped
+        volumes:
+            - ./grafana.ini:/etc/grafana/grafana.ini
+            - grafana_data:/var/lib/grafana
+            - ./grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
+            - ./grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards
+        environment:
+            - GF_SECURITY_ADMIN_PASSWORD=admin
+        expose:
+            - 3001
+        ports:
+            - 3001:3001
+        networks:
+            - web-monitor
+
+    mongo:
+        image: mongo:latest
+        container_name: mongo
+        hostname: mongo
+        restart: unless-stopped
+        # volumes:
+        #     - ./mongo/mongo.conf:/etc/mongo/mongo.conf
+        expose:
+            - 27017
+        ports:
+            - 27017:27017
+        networks:
+            - web-monitor
+    
+    mongo-exporter:
+        # image: percona/mongodb_exporter:latest
+        image: bitnami/mongodb-exporter:latest
+        container_name: mongo-exporter
+        restart: unless-stopped
+        environment:
+            - MONGODB_URI=mongodb://mongo:27017
+        expose:
+            - 9216
+        ports:
+            - 9216:9216
+        networks:
+            - web-monitor
+        command:
+            - "--mongodb.uri=mongodb://mongo:27017"
+            - "--mongodb.collstats-colls=players"
+            - "--discovering-mode"
+            - "--mongodb.direct-connect"  
+            - "--collect-all"            
+
+    # mail-exporter:
+    #     build:
+    #         context: ./mailexporter
+    #         dockerfile: Dockerfile
+    #     restart: always
+    #     volumes:
+    #         - ./mailexporter/mailexporter.conf:/etc/mailexporter.conf
+    #     networks:
+    #         - web-monitor
+
+    # mail:
+    #     image: mailserver/docker-mailserver
+    #     domainname: mail.example.com
+    #     environment:
+    #         POSTFIX_INET_PROTOCOLS: ipv4
+    #         SMTP_ONLY: 1
+    #         DEFAULT_RELAY_HOST: smtp.gmail.com
+    #         RELAY_HOST: smtp.gmail.com
+    #         RELAY_PORT: 587
+    #         RELAY_USERNAME: paw2021b3@gmail.com
+    #         RELAY_PASSWORD: orszlhydcvafwznx
+    #     ports:
+    #         - 25:25
+    #     expose:
+    #         - 25
+    #     networks:
+    #         - web-monitor
+    #     command: sh -c "./docker-mailserver/setup.sh email add name@mail.example.com"
+
     # postgres:
     #     image: postgres:latest
     #     container_name: postgres
@@ -95,44 +197,3 @@ services:
     #     networks:
     #         - web-monitor
     #     command: sh -c "chmod 0400 /etc/postfix/sasl_passwd && postmap /etc/postfix/sasl_passwd"
-
-    prometheus:
-        image: prom/prometheus:latest
-        container_name: prometheus
-        restart: unless-stopped
-        volumes:
-            - ./prometheus.yml:/etc/prometheus/prometheus.yml
-            - prometheus_data:/prometheus
-        command:
-            - '--config.file=/etc/prometheus/prometheus.yml'
-            - '--storage.tsdb.path=/prometheus'
-            - '--web.console.libraries=/etc/prometheus/console_libraries'
-            - '--web.console.templates=/etc/prometheus/consoles'
-            - '--web.enable-lifecycle'
-        expose:
-            - 9090
-        ports:
-            - 9090:9090
-        networks:
-            - web-monitor
-
-    grafana:
-        image: grafana/grafana-oss:latest
-        container_name: grafana
-        restart: unless-stopped
-        volumes:
-            - ./grafana.ini:/etc/grafana/grafana.ini
-            - grafana_data:/var/lib/grafana
-            - ./grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
-            - ./grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards
-        environment:
-            - GF_SECURITY_ADMIN_PASSWORD=admin
-            # - GF_PATHS_CONFIG=/etc/grafana/grafana.ini
-        expose:
-            - 3001
-        ports:
-            - 3001:3001
-        networks:
-            - web-monitor
-        # command:
-        #     - '--config=/etc/grafana/grafana.ini'
