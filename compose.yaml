@@ -1,79 +1,138 @@
 version: '3.8'
 
 networks:
-  red_monitor:
-    driver: bridge #default network driver. standalone container that comumincates with other containers
+    web-monitor:
+        driver: bridge #default network driver. standalone container that comumincates with other containers
 
 volumes:
-  prometheus_data: {}
-  grafana_data: {}
+    prometheus_data: {}
+    grafana_data: {}
 
 services:
-  node-exporter:
-    image: prom/node-exporter:latest
-    container_name: node-exporter
-    restart: unless-stopped
-    volumes:
-      - /proc:/host/proc:ro
-      - /sys:/host/sys:ro
-      - /:/rootfs:ro
-    command:
-      - '--path.procfs=/host/proc'
-      - '--path.rootfs=/rootfs'
-      - '--path.sysfs=/host/sys'
-      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
-    expose:
-      - 9100
-    networks:
-      - red_monitor
-  
-  rest-api:
-    image: python:latest
-    container_name: rest-api
-    restart: unless-stopped
-    volumes:
-      - ./api_rest:/usr/src/app
-    ports: 
-      - 5001:5001
-    networks:
-      - red_monitor
-    command: sh -c "cd /usr/src/app && pip install -r requirements.txt && python3 api.py"
+    node-exporter:
+        image: prom/node-exporter:latest
+        container_name: node-exporter
+        restart: unless-stopped
+        volumes:
+            - /proc:/host/proc:ro
+            - /sys:/host/sys:ro
+            - /:/rootfs:ro
+        command:
+            - '--path.procfs=/host/proc'
+            - '--path.rootfs=/rootfs'
+            - '--path.sysfs=/host/sys'
+            - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+        expose:
+            - 9100
+        networks:
+            - web-monitor
 
-  prometheus:
-    image: prom/prometheus:latest
-    container_name: prometheus
-    restart: unless-stopped
-    volumes:
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml
-      - prometheus_data:/prometheus
-    command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
-      - '--storage.tsdb.path=/prometheus'
-      - '--web.console.libraries=/etc/prometheus/console_libraries'
-      - '--web.console.templates=/etc/prometheus/consoles'
-      - '--web.enable-lifecycle'
-    expose:
-      - 9090
-    ports: 
-      - 9090:9090
-    networks:
-      - red_monitor
-  
-  grafana:
-    image: grafana/grafana:latest
-    container_name: grafana
-    restart: unless-stopped
-    volumes:
-      - ./grafana.ini:/etc/grafana/grafana.ini
-      - grafana_data:/var/lib/grafana
-      - ./grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
-      - ./grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards
-    environment:
-      - GF_SECURITY_ADMIN_PASSWORD=admin
-    expose:
-      - 3001
-    ports: 
-      - 3001:3001
-    networks:
-      - red_monitor
+    postgres-exporter:
+        image: prometheuscommunity/postgres-exporter
+        container_name: postgres-exporter
+        restart: unless-stopped
+        expose:
+            - 9187
+        ports:
+            - 9187:9187
+        environment:
+            DATA_SOURCE_NAME: 'postgresql://postgres:postgrespassword@postgres:5432/shop?sslmode=disable'
+        networks:
+            - web-monitor
 
+    rest-api:
+        image: python:latest
+        container_name: rest-api
+        restart: unless-stopped
+        volumes:
+            - ./api_rest:/usr/src/app
+        ports:
+            - 5001:5001
+        networks:
+            - web-monitor
+        command: sh -c "cd /usr/src/app && pip install -r requirements.txt && python3 api.py"
+
+    # postgres:
+    #     image: postgres:latest
+    #     container_name: postgres
+    #     restart: unless-stopped
+    #     volumes:
+    #         - ./postgres/postgresql.conf:/var/lib/postgresql//postgresql.conf
+    #     environment:
+    #         - POSTGRES_USER=postgres
+    #         - POSTGRES_PASSWORD=postgrespassword
+    #         - POSTGRES_DB=futbol
+    #     expose:
+    #         - 5432
+    #     ports:
+    #         - 5432:5432
+    #     networks:
+    #         - web-monitor
+
+    # random-endpoint:
+    #     image: python:latest
+    #     container_name: random-endpoint
+    #     restart: unless-stopped
+    #     volumes:
+    #         - ./random_endpoint:/usr/src/app
+    #     ports:
+    #         - 5002:5002
+    #     networks:
+    #         - web-monitor
+    #     command: sh -c "cd /usr/src/app && pip install -r requirements.txt && python3 random_endpoint.py"
+
+    # postfix-mailcow:
+    #     image: mailcow/postfix:latest
+    #     container_name: postfix-mailcow
+    #     restart: unless-stopped
+    #     volumes:
+    #         - ./postfix/main.cf:/opt/postfix/extra.cf
+    #         - ./postfix/sasl_passwd:/opt/postfix/sasl_passwd
+    #     ports:
+    #         - 587:587
+    #     expose:
+    #         - 587
+    #     networks:
+    #         - web-monitor
+    #     command: sh -c "chmod 0400 /etc/postfix/sasl_passwd && postmap /etc/postfix/sasl_passwd"
+
+    prometheus:
+        image: prom/prometheus:latest
+        container_name: prometheus
+        restart: unless-stopped
+        volumes:
+            - ./prometheus.yml:/etc/prometheus/prometheus.yml
+            - prometheus_data:/prometheus
+        command:
+            - '--config.file=/etc/prometheus/prometheus.yml'
+            - '--storage.tsdb.path=/prometheus'
+            - '--web.console.libraries=/etc/prometheus/console_libraries'
+            - '--web.console.templates=/etc/prometheus/consoles'
+            - '--web.enable-lifecycle'
+        expose:
+            - 9090
+        ports:
+            - 9090:9090
+        networks:
+            - web-monitor
+
+    grafana:
+        image: grafana/grafana-oss:latest
+        container_name: grafana
+        restart: unless-stopped
+        volumes:
+            - ./grafana.ini:/etc/grafana/grafana.ini
+            - grafana_data:/var/lib/grafana
+            - ./grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
+            - ./grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards
+        environment:
+            - GF_SECURITY_ADMIN_PASSWORD=admin
+            # - GF_PATHS_CONFIG=/etc/grafana/grafana.ini
+        expose:
+            - 3001
+        ports:
+            - 3001:3001
+        networks:
+            - web-monitor
+        # command:
+        #     - '--config=/etc/grafana/grafana.ini'
