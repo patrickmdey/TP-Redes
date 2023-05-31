@@ -150,6 +150,21 @@ services:
         command:
             - '--scrape_uri=http://apache:80/server-status?auto'
 
+    blackbox-exporter:
+        image: prom/blackbox-exporter:latest
+        container_name: blackbox-exporter
+        restart: unless-stopped
+        expose:
+            - 9115
+        ports:
+            - 9115:9115
+        networks:
+            - web-monitor
+        command:
+            - '--config.file=/config/blackbox.yml'
+        volumes:
+            - ./blackbox/blackbox.yml:/config/blackbox.yml
+
     # mail-exporter:
     #     build:
     #         context: ./mailexporter

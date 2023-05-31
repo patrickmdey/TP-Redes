@@ -1,0 +1,242 @@
+apiVersion: 1
+groups:
+    - orgId: 1
+      name: every-minute
+      folder: rules-by-severity
+      interval: 1m
+      rules:
+        - uid: db4e683c-be81-461c-9cbc-8684e7c41beb
+          title: Apache-is-down-alert-level-2
+          condition: is_last_apache_up
+          data:
+            - refId: apache_up
+              relativeTimeRange:
+                from: 300
+                to: 0
+              datasourceUid: P55236CDB9083968A
+              model:
+                editorMode: builder
+                exemplar: false
+                expr: apache_up{job="apache_exporter"}
+                hide: false
+                instant: false
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: true
+                refId: apache_up
+            - refId: last_apache_up
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: __expr__
+              model:
+                conditions:
+                    - evaluator:
+                        params:
+                            - 0
+                            - 0
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params: []
+                      reducer:
+                        params: []
+                        type: avg
+                      type: query
+                datasource:
+                    name: Expression
+                    type: __expr__
+                    uid: __expr__
+                expression: apache_up
+                intervalMs: 1000
+                maxDataPoints: 43200
+                reducer: last
+                refId: last_apache_up
+                settings:
+                    mode: ""
+                type: reduce
+            - refId: is_last_apache_up
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: __expr__
+              model:
+                conditions:
+                    - evaluator:
+                        params:
+                            - 0.5
+                            - 0
+                        type: lt
+                      operator:
+                        type: and
+                      query:
+                        params: []
+                      reducer:
+                        params: []
+                        type: avg
+                      type: query
+                datasource:
+                    name: Expression
+                    type: __expr__
+                    uid: __expr__
+                expression: last_apache_up
+                intervalMs: 1000
+                maxDataPoints: 43200
+                refId: is_last_apache_up
+                type: threshold
+          noDataState: NoData
+          execErrState: Error
+          for: 3m
+          annotations:
+            summary: Apache service is down. Level-1 couldn't fix it
+          labels:
+            severity: "2"
+          isPaused: false
+        - uid: fd365c9d-4517-4a5c-80a6-8d7e922db7ce
+          title: Apache-is-down-alert-level-1
+          condition: is_last_apache_up
+          data:
+            - refId: apache_up
+              relativeTimeRange:
+                from: 300
+                to: 0
+              datasourceUid: P55236CDB9083968A
+              model:
+                editorMode: builder
+                exemplar: false
+                expr: apache_up{job="apache_exporter"}
+                hide: false
+                instant: false
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: true
+                refId: apache_up
+            - refId: last_apache_up
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: __expr__
+              model:
+                conditions:
+                    - evaluator:
+                        params:
+                            - 0
+                            - 0
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params: []
+                      reducer:
+                        params: []
+                        type: avg
+                      type: query
+                datasource:
+                    name: Expression
+                    type: __expr__
+                    uid: __expr__
+                expression: apache_up
+                intervalMs: 1000
+                maxDataPoints: 43200
+                reducer: last
+                refId: last_apache_up
+                settings:
+                    mode: ""
+                type: reduce
+            - refId: is_last_apache_up
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: __expr__
+              model:
+                conditions:
+                    - evaluator:
+                        params:
+                            - 0.5
+                            - 0
+                        type: lt
+                      operator:
+                        type: and
+                      query:
+                        params: []
+                      reducer:
+                        params: []
+                        type: avg
+                      type: query
+                datasource:
+                    name: Expression
+                    type: __expr__
+                    uid: __expr__
+                expression: last_apache_up
+                intervalMs: 1000
+                maxDataPoints: 43200
+                refId: is_last_apache_up
+                type: threshold
+          noDataState: NoData
+          execErrState: Error
+          for: 2m
+          annotations:
+            summary: Apache service is down
+          labels:
+            severity: "1"
+          isPaused: false
+    - orgId: 1
+      name: warning
+      folder: Rules
+      interval: 1m
+      rules:
+        - uid: a2cd6199-62a0-4bce-9f09-221ef9896c92
+          title: slow latency warning
+          condition: C
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: P55236CDB9083968A
+              model:
+                editorMode: code
+                expr: rate(request_latency_seconds_sum[5m]) / rate(request_latency_seconds_count[5m])
+                hide: false
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: true
+                refId: A
+            - refId: C
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: __expr__
+              model:
+                conditions:
+                    - evaluator:
+                        params:
+                            - 1
+                            - 0
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params:
+                            - A
+                      reducer:
+                        params: []
+                        type: avg
+                      type: query
+                datasource:
+                    name: Expression
+                    type: __expr__
+                    uid: __expr__
+                expression: ""
+                intervalMs: 1000
+                maxDataPoints: 43200
+                refId: C
+                type: classic_conditions
+          noDataState: NoData
+          execErrState: Error
+          for: 2m
+          isPaused: false

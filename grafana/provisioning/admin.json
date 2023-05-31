@@ -1,0 +1,70 @@
+{
+	"template_files": {},
+	"template_file_provenances": {},
+	"alertmanager_config": {
+		"route": {
+			"receiver": "SOC-level-1",
+			"routes": [
+				{
+					"receiver": "SOC-level-1",
+					"object_matchers": [["severity", "=", "1"]]
+				},
+				{
+					"receiver": "SOC-level-2",
+					"object_matchers": [["severity", "=", "2"]]
+				}
+			]
+		},
+		"templates": null,
+		"receivers": [
+			{
+				"name": "grafana-default-email",
+				"grafana_managed_receiver_configs": [
+					{
+						"uid": "f32926d7-ffa8-404b-9688-ccbf25456513",
+						"name": "grafana-default-email",
+						"type": "email",
+						"disableResolveMessage": false,
+						"settings": {
+							"addresses": "pdey@itba.edu.ar",
+							"singleEmail": false
+						},
+						"secureFields": {}
+					}
+				]
+			},
+			{
+				"name": "SOC-level-1",
+				"grafana_managed_receiver_configs": [
+					{
+						"uid": "acdb944a-a406-4a9f-9cda-0eb5f577be0b",
+						"name": "SOC-level-1",
+						"type": "email",
+						"disableResolveMessage": false,
+						"settings": {
+							"addresses": "pdey@itba.edu.ar;mlombardi@itba.edu.ar",
+							"singleEmail": false
+						},
+						"secureFields": {}
+					}
+				]
+			},
+			{
+				"name": "SOC-level-2",
+				"grafana_managed_receiver_configs": [
+					{
+						"uid": "f29c81fb-5779-4f51-9b39-f20ed1ba749c",
+						"name": "SOC-level-2",
+						"type": "email",
+						"disableResolveMessage": false,
+						"settings": {
+							"addresses": "srosati@itba.edu.ar",
+							"singleEmail": false
+						},
+						"secureFields": {}
+					}
+				]
+			}
+		]
+	}
+}
