@@ -2,6 +2,7 @@ from flask import Flask, Response
 from prometheus_client import Counter, Histogram, generate_latest, CONTENT_TYPE_LATEST
 from pymongo import MongoClient
 from flask import request
+import time
 
 app = Flask(__name__)
 
@@ -14,6 +15,13 @@ client = MongoClient('mongo', 27017)
 db = client.flask_db
 players_db = db.players
 #
+
+@app.route("/delay")
+@REQUEST_LATENCY.time()
+def delay_endpoint():
+    time.sleep(5)
+    return "Sleep terminado"
+    
 
 @app.route('/players', methods=["POST"])
 @REQUEST_LATENCY.time()

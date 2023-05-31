@@ -18,12 +18,17 @@ scrape_configs:
           - targets: ['apache-exporter:9117']
 
     - job_name: 'blackbox_exporter'
-      metrics_path: /probe
+      # scrape_interval: 2s
+      metrics_path: /probe # The blackbox exporter's metrics endpoint.
+      scrape_timeout: 10s
       params:
           module: [http_2xx] # Look for a HTTP 200 response.
       static_configs:
           - targets:
                 - http://apache:80 # Target to probe with http on port 80.
+                - http://apache:80/login
+                - http://apache:80/players
+                - http://apache:80/delay.html
       relabel_configs:
           - source_labels: [__address__]
             target_label: __param_target
