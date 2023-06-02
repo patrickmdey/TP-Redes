@@ -81,6 +81,7 @@ services:
             - grafana_data:/var/lib/grafana
             - ./grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
             - ./grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards
+            - ./grafana/provisioning/alert-rules:/etc/grafana/provisioning/alert-rules
         environment:
             - GF_SECURITY_ADMIN_PASSWORD=admin
         expose:
@@ -165,75 +166,15 @@ services:
         volumes:
             - ./blackbox/blackbox.yml:/config/blackbox.yml
 
-    # mail-exporter:
-    #     build:
-    #         context: ./mailexporter
-    #         dockerfile: Dockerfile
-    #     restart: always
-    #     volumes:
-    #         - ./mailexporter/mailexporter.conf:/etc/mailexporter.conf
-    #     networks:
-    #         - web-monitor
-
-    # mail:
-    #     image: mailserver/docker-mailserver
-    #     domainname: mail.example.com
-    #     environment:
-    #         POSTFIX_INET_PROTOCOLS: ipv4
-    #         SMTP_ONLY: 1
-    #         DEFAULT_RELAY_HOST: smtp.gmail.com
-    #         RELAY_HOST: smtp.gmail.com
-    #         RELAY_PORT: 587
-    #         RELAY_USERNAME: paw2021b3@gmail.com
-    #         RELAY_PASSWORD: orszlhydcvafwznx
-    #     ports:
-    #         - 25:25
-    #     expose:
-    #         - 25
-    #     networks:
-    #         - web-monitor
-    #     command: sh -c "./docker-mailserver/setup.sh email add name@mail.example.com"
-
-    # postgres:
-    #     image: postgres:latest
-    #     container_name: postgres
-    #     restart: unless-stopped
-    #     volumes:
-    #         - ./postgres/postgresql.conf:/var/lib/postgresql//postgresql.conf
-    #     environment:
-    #         - POSTGRES_USER=postgres
-    #         - POSTGRES_PASSWORD=postgrespassword
-    #         - POSTGRES_DB=futbol
-    #     expose:
-    #         - 5432
-    #     ports:
-    #         - 5432:5432
-    #     networks:
-    #         - web-monitor
-
-    # random-endpoint:
-    #     image: python:latest
-    #     container_name: random-endpoint
-    #     restart: unless-stopped
-    #     volumes:
-    #         - ./random_endpoint:/usr/src/app
-    #     ports:
-    #         - 5002:5002
-    #     networks:
-    #         - web-monitor
-    #     command: sh -c "cd /usr/src/app && pip install -r requirements.txt && python3 random_endpoint.py"
-
-    # postfix-mailcow:
-    #     image: mailcow/postfix:latest
-    #     container_name: postfix-mailcow
-    #     restart: unless-stopped
-    #     volumes:
-    #         - ./postfix/main.cf:/opt/postfix/extra.cf
-    #         - ./postfix/sasl_passwd:/opt/postfix/sasl_passwd
-    #     ports:
-    #         - 587:587
-    #     expose:
-    #         - 587
-    #     networks:
-    #         - web-monitor
-    #     command: sh -c "chmod 0400 /etc/postfix/sasl_passwd && postmap /etc/postfix/sasl_passwd"
+    delay-web:
+        build:
+            context: ./delay-web
+            dockerfile: Dockerfile
+        container_name: delay-web
+        restart: unless-stopped
+        networks:
+            - web-monitor
+        expose:
+            - 3002
+        ports:
+            - 3002:3002
