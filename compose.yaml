@@ -27,19 +27,6 @@ services:
         networks:
             - web-monitor
 
-    postgres-exporter:
-        image: prometheuscommunity/postgres-exporter
-        container_name: postgres-exporter
-        restart: unless-stopped
-        expose:
-            - 9187
-        ports:
-            - 9187:9187
-        environment:
-            DATA_SOURCE_NAME: 'postgresql://postgres:postgrespassword@postgres:5432/shop?sslmode=disable'
-        networks:
-            - web-monitor
-
     rest-api:
         image: python:latest
         container_name: rest-api

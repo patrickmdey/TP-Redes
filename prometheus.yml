@@ -52,12 +52,3 @@ scrape_configs:
             target_label: instance
           - target_label: __address__
             replacement: blackbox-exporter:9115 # The blackbox exporter's real hostname:port.
-
-
-    # - job_name: 'postgres-exporter'
-    #   static_configs:
-    #       - targets: ['postgres-exporter:5187']
-
-    # - job_name: 'mail-exporter'
-    #   static_configs:
-    #       - targets: ['mail-exporter:8025']

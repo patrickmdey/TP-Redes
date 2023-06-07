@@ -14,14 +14,6 @@ REQUEST_TOTAL = Counter('request_total', 'Cantidad total de solicitudes')
 client = MongoClient('mongo', 27017)
 db = client.flask_db
 players_db = db.players
-#
-
-@app.route("/delay")
-@REQUEST_LATENCY.time()
-def delay_endpoint():
-    time.sleep(5)
-    return "Sleep terminado"
-    
 
 @app.route('/players', methods=["POST"])
 @REQUEST_LATENCY.time()
