@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Players</title>
+    </head>
+    <body>
+        <div id="players"></div>
+    </body>
+    <script type="application/javascript" defer>
+        fetch('http://localhost:5001/players')
+            .then(res => res.json())
+            .then(players => {
+                console.log(players)
+                players.forEach(player => {
+                    const div = document.createElement('div');
+                    const h1 = document.createElement('h1');
+                    const p = document.createElement('p');
+                    h1.textContent = player.name;
+                    p.textContent = `Score: ${player.score}`;
+                    div.appendChild(h1);
+                    div.appendChild(p);
+                    document.getElementById('players').appendChild(div);
+                });
+            })
+    </script>
+</html>

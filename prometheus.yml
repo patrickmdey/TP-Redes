@@ -26,8 +26,8 @@ scrape_configs:
       static_configs:
           - targets:
                 - http://apache:80 # Target to probe with http on port 80.
-                - http://apache:80/login
-                - http://apache:80/players
+                - http://apache:80/login.html
+                - http://apache:80/players.html
       relabel_configs:
           - source_labels: [__address__]
             target_label: __param_target
