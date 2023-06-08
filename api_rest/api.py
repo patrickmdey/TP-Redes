@@ -1,10 +1,12 @@
-from flask import Flask, Response
+from flask import Flask, Response, request
+from flask_cors import CORS
 from prometheus_client import Counter, Histogram, generate_latest, CONTENT_TYPE_LATEST
 from pymongo import MongoClient
-from flask import request
-import time
 
 app = Flask(__name__)
+app.config['CORS_HEADERS'] = 'Content-Type'
+
+cors = CORS(app)
 
 # Define las métricas que deseas recopilar
 REQUEST_LATENCY = Histogram('request_latency_seconds', 'Latencia de las solicitudes')
@@ -34,7 +36,9 @@ def get_player():
     # Incrementa el contador de solicitudes totales
     REQUEST_TOTAL.inc()
 
-    return {"player": players_db.find_one().get('name')}
+    players = players_db.find()
+    players = list(map(lambda x: {'name': x.get('name'), 'score': x.get('score')}, players))
+    return players
 
 @app.route('/')
 @REQUEST_LATENCY.time()
